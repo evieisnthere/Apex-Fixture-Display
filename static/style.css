@@ -1,0 +1,303 @@
+/* ===== Stadium broadcast theme - 1080p scale ===== */
+
+:root {
+    --navy-deep: #060d1f;
+    --navy-mid: #0d1f3d;
+    --gold: #f5c518;
+    --white: #ffffff;
+    --slate: #9fb3d1;
+}
+
+
+* {
+    box-sizing: border-box;
+}
+
+
+body {
+    margin: 0;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            ellipse at top,
+            var(--navy-mid) 0%,
+            var(--navy-deep) 65%
+        );
+
+    color: var(--white);
+
+    font-family: Arial, Helvetica, sans-serif;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    position: relative;
+}
+
+
+/* Floodlights */
+
+.floodlight {
+    position: absolute;
+    top: -10%;
+
+    width: 0;
+    height: 0;
+
+    border-style: solid;
+
+    opacity: 0.55;
+    filter: blur(1px);
+
+    pointer-events: none;
+}
+
+
+.floodlight-left {
+    left: -5%;
+
+    border-width: 0 350px 1200px 0;
+    border-color:
+        transparent rgba(180,210,255,.18)
+        transparent transparent;
+
+    transform: rotate(20deg);
+}
+
+
+.floodlight-right {
+    right: -5%;
+
+    border-width: 0 0 1200px 350px;
+    border-color:
+        transparent transparent
+        rgba(180,210,255,.18)
+        transparent;
+
+    transform: rotate(-20deg);
+}
+
+
+/* Main overlay */
+
+.overlay {
+
+    width: 1500px;
+    max-width: 90vw;
+
+    text-align: center;
+
+    padding: 70px 80px;
+
+    position: relative;
+    z-index: 2;
+}
+
+
+/* Header */
+
+.eyebrow {
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    gap:30px;
+
+    margin-bottom:60px;
+}
+
+
+.rule {
+
+    height:3px;
+    width:180px;
+
+    background:var(--gold);
+}
+
+
+.eyebrow-text {
+
+    color:var(--gold);
+
+    font-size:3rem;
+
+    font-weight:900;
+
+    letter-spacing:12px;
+
+    text-transform:uppercase;
+}
+
+
+
+/* Match blocks */
+
+.block {
+
+    margin-bottom:55px;
+
+}
+
+
+.label {
+
+    display:inline-block;
+
+    font-size:1.5rem;
+
+    letter-spacing:5px;
+
+    font-weight:800;
+
+    color:var(--slate);
+
+    text-transform:uppercase;
+
+    margin-bottom:18px;
+}
+
+
+.label-gold {
+
+    color:var(--gold);
+
+}
+
+
+
+/* Teams */
+
+.teams {
+
+    font-size:6rem;
+
+    font-weight:900;
+
+    text-transform:uppercase;
+
+    letter-spacing:4px;
+
+    line-height:1.1;
+
+    text-shadow:
+        0 0 25px rgba(245,197,24,.25);
+}
+
+
+
+.teams.small {
+
+    font-size:4rem;
+
+    text-shadow:none;
+}
+
+
+
+.vs {
+
+    color:var(--gold);
+
+    font-size:.55em;
+
+    font-weight:400;
+
+    font-style:italic;
+
+    margin:0 25px;
+
+}
+
+
+
+/* Smaller text */
+
+.sub {
+
+    margin-top:15px;
+
+    color:var(--slate);
+
+    font-size:2rem;
+
+    letter-spacing:2px;
+}
+
+
+
+/* Up next separator */
+
+.up-next {
+
+    border-top:
+
+        2px solid rgba(245,197,24,.25);
+
+    padding-top:40px;
+}
+
+
+
+/* Banner */
+
+.banner {
+
+    display:inline-block;
+
+    border:
+
+        2px solid var(--gold);
+
+    border-radius:999px;
+
+    padding:20px 70px;
+
+    font-size:2.2rem;
+
+    letter-spacing:6px;
+
+    font-weight:900;
+
+    margin-top:40px;
+
+}
+
+
+
+.banner-highlight {
+
+    color:var(--gold);
+
+}
+
+
+
+/* Clock */
+
+.clock {
+
+    margin-top:50px;
+
+    font-size:1.8rem;
+
+    color:var(--slate);
+
+    letter-spacing:2px;
+
+    opacity:.9;
+}
+
+
+/* Empty state */
+
+.now-playing.empty .label {
+
+    color:#6b7d9c;
+
+}
