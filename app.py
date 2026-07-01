@@ -3,11 +3,12 @@ from flask import Flask, render_template, jsonify
 import csv
 import os
 import glob
+import sys
 import threading
 import time
 from datetime import datetime, timedelta
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 import json
 
 
@@ -15,13 +16,12 @@ app = Flask(__name__)
 
 # Anchor the CSV path to this script's own folder, so it works no matter
 # what directory you launch "python app.py" from.
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CSV_PATH = None
 MATCH_DURATION_MINS = 140   # how long a match "counts" as current/in-progress
+DEFAULT_NUM_COURTS = 5
 
-CONFIG_FILE = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    "config.json"
-)
+CONFIG_FILE = os.path.join(BASE_DIR, "config.json")
 
 
 def load_config():
@@ -29,27 +29,67 @@ def load_config():
         return json.load(f)
 
 
+def get_num_courts():
+    """Read num_courts from config.json, falling back to a sane default
+    if it's missing or invalid rather than crashing the whole display."""
+    try:
+        config = load_config()
+        n = int(config.get("num_courts", DEFAULT_NUM_COURTS))
+        return n if n > 0 else DEFAULT_NUM_COURTS
+    except (OSError, ValueError, json.JSONDecodeError):
+        return DEFAULT_NUM_COURTS
+
+
 def select_csv():
+    """Find the newest fixtures CSV in the configured downloads folder.
+    Shows a friendly popup instead of a silent console exit, since the
+    people running this day-to-day aren't using a terminal."""
 
     global CSV_PATH
 
-    config = load_config()
+    try:
+        config = load_config()
+        downloads_dir = config["downloads_folder"]
+    except (OSError, json.JSONDecodeError, KeyError) as exc:
+        _fatal_startup_error(
+            "Settings Problem",
+            "config.json is missing or unreadable "
+            f"({exc}).\n\nOpen settings.py and click Save Settings to "
+            "regenerate it, then try again."
+        )
+        return
 
-    downloads_dir = config["downloads_folder"]
-
-    files = glob.glob(
-        os.path.join(downloads_dir, "*.csv")
-    )
+    files = glob.glob(os.path.join(downloads_dir, "*.csv"))
 
     if not files:
-        print("No CSV files found.")
-        exit()
+        _fatal_startup_error(
+            "No Fixtures Found",
+            f"No fixtures CSV was found in:\n{downloads_dir}\n\n"
+            "Run fixture-scraper2.py first to download today's fixtures, "
+            "then start the display again."
+        )
+        return
 
     # Pick newest CSV
     CSV_PATH = max(
         files,
         key=os.path.getmtime
     )
+
+
+def _fatal_startup_error(title, message):
+    """Show a popup for a startup problem, then exit. A plain print() would
+    be invisible to someone who launched this by double-clicking, not from
+    a terminal."""
+    try:
+        root = tk.Tk()
+        root.withdraw()
+        messagebox.showerror(title, message)
+        root.destroy()
+    except tk.TclError:
+        # No display available (e.g. running headless) -- fall back to console.
+        print(f"{title}: {message}")
+    sys.exit(1)
 
 
 # --- Fixture cache -----------------------------------------------------
@@ -133,11 +173,22 @@ def load_fixtures():
 @app.route("/")
 def index():
     fixtures = load_fixtures()
-    seen = []
+
+    # Always show Court 1..N per settings, even before any fixtures exist
+    # for some of them (e.g. first thing on game day, before the scrape).
+    num_courts = get_num_courts()
+    courts = [f"Court {i}" for i in range(1, num_courts + 1)]
+
+    # Fold in any court names from the CSV that fall outside that numbered
+    # range (e.g. a differently-named venue court), without duplicating.
+    seen_lower = {c.lower() for c in courts}
     for f in fixtures:
-        if f["court"] not in seen:
-            seen.append(f["court"])
-    return render_template("index.html", courts=seen)
+        name = f.get("court", "")
+        if name and name.lower() not in seen_lower:
+            courts.append(name)
+            seen_lower.add(name.lower())
+
+    return render_template("index.html", courts=courts)
 
 @app.route("/court/<court_name>")
 def court(court_name):
@@ -189,10 +240,18 @@ def court_api(court_name):
                 )
             }
     
+    try:
+        csv_updated = datetime.fromtimestamp(
+            os.path.getmtime(CSV_PATH)
+        ).strftime("%H:%M:%S")
+    except OSError:
+        csv_updated = None
+
     return jsonify({
         "current": current,
         "next": next_match,
-        "clock": now.strftime("%A %d %B %Y • %H:%M:%S")
+        "clock": now.strftime("%A %d %B %Y • %H:%M:%S"),
+        "fixtures_updated": csv_updated
     })
 
 if __name__ == "__main__":
@@ -202,5 +261,5 @@ if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
         port=5000,
-        debug=False
+        debug=True
     )

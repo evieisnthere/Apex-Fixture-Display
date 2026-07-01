@@ -12,6 +12,7 @@ CONFIG_FILE = os.path.join(
 
 DEFAULT_CONFIG = {
     "downloads_folder": "Z:\\",
+    "num_courts": 5,
     "leagues": [
         {
             "name": "U/22 Womens",
@@ -43,8 +44,20 @@ def load_config():
 
 def save_config():
 
+    try:
+        num_courts = int(num_courts_var.get())
+        if num_courts < 1:
+            raise ValueError
+    except (ValueError, tk.TclError):
+        messagebox.showerror(
+            "Invalid Number of Courts",
+            "Number of Courts must be a whole number of 1 or more."
+        )
+        return
+
     config = {
         "downloads_folder": folder_var.get(),
+        "num_courts": num_courts,
         "leagues": []
     }
 
@@ -193,6 +206,43 @@ tk.Button(
     folder_box,
     text="Browse",
     command=browse_folder
+).pack(side="left", padx=5)
+
+
+
+# Number of courts
+
+tk.Label(
+    root,
+    text="Number of Courts:"
+).pack(anchor="w", padx=10, pady=(15, 0))
+
+
+num_courts_box = tk.Frame(root)
+num_courts_box.pack(fill="x", padx=10)
+
+
+num_courts_var = tk.StringVar(
+    value=str(config.get("num_courts", DEFAULT_CONFIG["num_courts"]))
+)
+
+
+tk.Spinbox(
+    num_courts_box,
+    from_=1,
+    to=50,
+    width=5,
+    textvariable=num_courts_var
+).pack(side="left")
+
+
+tk.Label(
+    num_courts_box,
+    text="  This controls how many court links show on the display's home page "
+         "(e.g. Court 1 through Court N), even before fixtures exist for all of them.",
+    fg="gray40",
+    wraplength=650,
+    justify="left"
 ).pack(side="left", padx=5)
 
 

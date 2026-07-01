@@ -17,5 +17,6 @@
             "name": "Open Mens",
             "url": "https://cricketaustralia.spawtz.com/Leagues/Fixtures?LeagueId=5&SeasonId=10&DivisionId=168"
         }
-    ]
+    ],
+    "num_courts": 5
 }
